@@ -3,61 +3,109 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 
-function verify(){
 
-    let user = tg.initDataUnsafe.user;
+document
+.getElementById("verify")
+.onclick = function(){
+
+
+    const token = turnstile.getResponse();
+
+
+
+    if(!token){
+
+        document.getElementById("status").innerHTML =
+        "❌ Пройдите проверку Cloudflare";
+
+        return;
+
+    }
+
+
+
+    document.getElementById("status").innerHTML =
+    "⏳ Проверяем...";
+
+
+
+    const user = tg.initDataUnsafe.user;
+
 
 
     fetch(
         "https://captcha-server-tjjx.onrender.com/verify",
         {
+
             method:"POST",
 
+
             headers:{
-                "Content-Type":"application/json"
+
+                "Content-Type":
+                "application/json"
+
             },
+
 
             body:JSON.stringify({
 
-                id:user?.id || 0,
-                username:user?.username || "unknown"
+                id:
+                user ? user.id : 0,
+
+
+                username:
+                user ? user.username : "unknown",
+
+
+                turnstile_token:
+                token
 
             })
+
+
         }
     )
 
 
     .then(response => response.json())
 
+
     .then(data => {
 
-        alert(
-`
-✅ Проверка пройдена
 
-IP:
-${data.ip}
+        if(data.success){
 
-Страна:
-${data.country}
 
-Город:
-${data.city}
+            document.getElementById("status").innerHTML =
+            "✅ Проверка пройдена";
 
-Провайдер:
-${data.provider}
-`
-        );
+
+        }
+
+
+        else{
+
+
+            document.getElementById("status").innerHTML =
+            "❌ Ошибка проверки";
+
+
+        }
+
 
     })
 
-    .catch(error => {
 
-        alert(
-        "Ошибка соединения с сервером"
-        );
+    .catch(()=>{
+
+
+        document.getElementById("status").innerHTML =
+        "❌ Ошибка соединения";
+
 
     });
 
 
-}
+
+};
